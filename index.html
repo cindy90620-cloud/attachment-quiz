@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECR-S 雙維度心理繪本測驗</title>
+  <!-- 載入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 載入 Google Fonts: 圓體字型 Zen Maru Gothic 搭配 Noto Sans TC / Noto Serif TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+TC:wght@600;700&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Zen Maru Gothic"', '"Noto Sans TC"', 'sans-serif'],
+            serif: ['"Noto Serif TC"', 'serif'],
+          },
+          colors: {
+            paper: '#FDF8F2',
+            paperdark: '#F5EDE1',
+            cocoa: '#3D342F',
+            cocoalight: '#7A6C63',
+            terracotta: '#E07A5F',
+            sage: '#81B29A',
+            mustard: '#F2CC8F',
+            twilight: '#6D6875',
+            roseclay: '#D4728C'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 水彩紙張細膩顆粒質感背景 */
+    .watercolor-paper {
+      background-color: #FDF8F2;
+      background-image: 
+        radial-gradient(circle at 15% 12%, rgba(242, 204, 143, 0.22) 0%, transparent 45%),
+        radial-gradient(circle at 88% 22%, rgba(129, 178, 154, 0.16) 0%, transparent 48%),
+        radial-gradient(circle at 20% 85%, rgba(224, 122, 95, 0.14) 0%, transparent 50%),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
+    }
+
+    /* 手繪有機不規則圓角邊框 */
+    .hand-drawn-box {
+      border-radius: 26px 22px 28px 20px / 22px 26px 20px 28px;
+      border: 2px solid #3D342F;
+      box-shadow: 3px 4px 0px rgba(61, 52, 47, 0.14);
+    }
+
+    .hand-drawn-pill {
+      border-radius: 999px 980px 990px 975px / 975px 990px 980px 999px;
+      border: 1.8px solid #3D342F;
+      box-shadow: 2px 2.5px 0px rgba(61, 52, 47, 0.12);
+    }
+
+    .hand-drawn-sticker {
+      border-radius: 16px 14px 18px 13px / 14px 17px 13px 16px;
+      border: 1.8px solid #3D342F;
+      box-shadow: 0px 3px 0px rgba(61, 52, 47, 0.18);
+      transition: all 0.16s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .hand-drawn-sticker:active {
+      transform: translateY(2px) scale(0.95);
+      box-shadow: 0px 1px 0px rgba(61, 52, 47, 0.18);
+    }
+
+    /* 隱藏捲軸 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* 繪本翻頁動畫 */
+    @keyframes pageTurnNext {
+      0% {
+        opacity: 0;
+        transform: translateX(24px) rotate(1deg);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0) rotate(0deg);
+      }
+    }
+
+    @keyframes pageTurnPrev {
+      0% {
+        opacity: 0;
+        transform: translateX(-24px) rotate(-1deg);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0) rotate(0deg);
+      }
+    }
+
+    @keyframes floatGentle {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-5px);
+      }
+    }
+
+    @keyframes starGlow {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.9;
+      }
+      50% {
+        transform: scale(1.25);
+        opacity: 0.45;
+      }
+    }
+
+    .anim-next {
+      animation: pageTurnNext 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .anim-prev {
+      animation: pageTurnPrev 0.36s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    .anim-float {
+      animation: floatGentle 3.4s ease-in-out infinite;
+    }
+
+    .star-pulse {
+      transform-origin: center;
+      transform-box: fill-box;
+      animation: starGlow 2.2s ease-in-out infinite;
+    }
+
+    button, input {
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-[#EDE4D7] text-cocoa antialiased min-h-screen flex justify-center selection:bg-mustard/50 selection:text-cocoa">
+
+  <!-- 手機版繪本卡片主容器 (Max-width 480px) -->
+  <div id="app-shell" class="w-full max-w-[480px] min-h-screen sm:min-h-[850px] sm:my-6 sm:rounded-[34px] watercolor-paper sm:border-2 sm:border-cocoa sm:shadow-[6px_8px_0px_rgba(61,52,47,0.16)] flex flex-col relative overflow-hidden">
+
+    <!-- 頂部繪本裝訂裝飾縫線 -->
+    <div class="w-full h-3 bg-repeat-x opacity-30 pointer-events-none" style="background-image: radial-gradient(circle, #3D342F 1.5px, transparent 1.5px); background-size: 16px 8px; background-position: 0 4px;"></div>
+
+    <!-- ==========================================
+         畫面 1：封面歡迎頁 (Storybook Cover)
+         ========================================== -->
+    <section id="screen-welcome" class="flex-1 flex flex-col justify-between p-6 sm:p-7">
+      <!-- 頂部手繪風標籤 -->
+      <div class="flex items-center justify-between pt-1">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#FFFDF9] hand-drawn-pill">
+          <span class="text-sm">📖</span>
+          <span class="text-xs font-bold text-cocoa tracking-wide">ECR-S 雙維度心理繪本測驗</span>
+        </div>
+        <span class="text-xs font-bold text-cocoalight bg-mustard/40 px-2.5 py-1 rounded-full">12 頁小故事</span>
+      </div>
+
+      <!-- 中央原創手繪 SVG 封面插圖：兩顆帶著溫暖光暈的小星球與小精靈 -->
+      <div class="my-auto py-4 flex flex-col items-center text-center">
+        <div class="w-full max-w-[310px] aspect-[4/3] relative flex items-center justify-center anim-float">
+          <svg viewBox="0 0 320 240" class="w-full h-full overflow-visible" fill="none">
+            <!-- 水彩暈染背景光圈 -->
+            <circle cx="115" cy="122" r="72" fill="#F2CC8F" opacity="0.28" />
+            <circle cx="205" cy="115" r="68" fill="#81B29A" opacity="0.22" />
+            <ellipse cx="160" cy="202" rx="115" ry="14" fill="#E6DAC8" opacity="0.65" />
+
+            <!-- 背景手繪小星星與星軌 -->
+            <path d="M55 150 Q160 195 268 135" stroke="#3D342F" stroke-width="1.5" stroke-dasharray="4 5" stroke-linecap="round" opacity="0.45" />
+            <path d="M48 64 L51 72 L59 75 L51 78 L48 86 L45 78 L37 75 L45 72 Z" fill="#F2CC8F" stroke="#3D342F" stroke-width="1.5" stroke-linejoin="round" />
+            <path d="M272 52 L274 58 L280 60 L274 62 L272 68 L270 62 L264 60 L270 58 Z" fill="#E07A5F" stroke="#3D342F" stroke-width="1.4" stroke-linejoin="round" />
+            <circle cx="160" cy="42" r="3" fill="#81B29A" stroke="#3D342F" stroke-width="1.4" />
+
+            <!-- 左側小星球（暖橘心靈小精靈） -->
+            <g transform="translate(108, 125)">
+              <!-- 星球光環 -->
+              <ellipse cx="0" cy="4" rx="54" ry="15" transform="rotate(-14)" stroke="#3D342F" stroke-width="2" fill="none" />
+              <!-- 星球本體 -->
+              <circle cx="0" cy="0" r="38" fill="#F4A261" stroke="#3D342F" stroke-width="2.4" />
+              <!-- 溫暖臉頰與水彩斑點 -->
+              <circle cx="-16" cy="-14" r="7" fill="#E07A5F" opacity="0.55" />
+              <ellipse cx="-14" cy="6" rx="5.5" ry="3.5" fill="#E07A5F" opacity="0.75" />
+              <ellipse cx="14" cy="6" rx="5.5" ry="3.5" fill="#E07A5F" opacity="0.75" />
+              <!-- 微笑表情 -->
+              <circle cx="-10" cy="-1" r="2.6" fill="#3D342F" />
+              <circle cx="10" cy="-1" r="2.6" fill="#3D342F" />
+              <path d="M-4 5 Q0 10 4 5" stroke="#3D342F" stroke-width="2.2" stroke-linecap="round" />
+              <!-- 伸出的小手手 -->
+              <path d="M35 8 Q46 6 50 11" stroke="#3D342F" stroke-width="2.2" stroke-linecap="round" />
+            </g>
+
+            <!-- 右側小星球（鼠尾草綠小精靈，保持舒適又溫暖的距離） -->
+            <g transform="translate(214, 118)">
+              <!-- 小草嫩芽 -->
+              <path d="M0 -34 Q-6 -48 -16 -44 Q-10 -34 0 -34 Z" fill="#81B29A" stroke="#3D342F" stroke-width="1.8" stroke-linejoin="round" />
+              <path d="M0 -34 Q8 -48 17 -42 Q10 -33 0 -34 Z" fill="#A3C9A8" stroke="#3D342F" stroke-width="1.8" stroke-linejoin="round" />
+              <!-- 星球本體 -->
+              <circle cx="0" cy="0" r="34" fill="#95C4AE" stroke="#3D342F" stroke-width="2.4" />
+              <circle cx="14" cy="-12" r="6" fill="#FFFFFF" opacity="0.4" />
+              <!-- 腮紅與眼睛 -->
+              <ellipse cx="-12" cy="5" rx="5" ry="3" fill="#E07A5F" opacity="0.65" />
+              <ellipse cx="12" cy="5" rx="5" ry="3" fill="#E07A5F" opacity="0.65" />
+              <path d="M-11 -2 Q-8 -6 -5 -2" stroke="#3D342F" stroke-width="2.2" stroke-linecap="round" />
+              <path d="M5 -2 Q8 -6 11 -2" stroke="#3D342F" stroke-width="2.2" stroke-linecap="round" />
+              <path d="M-3 5 Q0 9 3 5" stroke="#3D342F" stroke-width="2.2" stroke-linecap="round" />
+              <!-- 伸出的小手手 -->
+              <path d="M-32 10 Q-42 8 -46 13" stroke="#3D342F" stroke-width="2.2" stroke-linecap="round" />
+            </g>
+
+            <!-- 兩顆星球之間漂浮的小愛心與虛線連結 -->
+            <path d="M161 95 C161 90, 153 88, 153 94 C153 99, 161 104, 161 104 C161 104, 169 99, 169 94 C169 88, 161 90, 161 95 Z" fill="#E07A5F" stroke="#3D342F" stroke-width="1.8" stroke-linejoin="round" />
+          </svg>
+        </div>
+
+        <h1 class="font-serif text-2xl sm:text-[27px] font-bold text-cocoa leading-snug tracking-tight mt-1">
+          靠近與距離的溫柔探索
+        </h1>
+        <p class="text-xs sm:text-sm font-bold text-terracotta mt-1">
+          測測你在親密關係裡的依附安全感座標
+        </p>
+
+        <p class="text-xs sm:text-sm text-cocoalight mt-3.5 leading-relaxed max-w-[360px]">
+          在愛情與最親近的友情裡，你是渴望緊緊相依的小鹿，還是需要獨處玻璃罩的小狐狸？翻開這本 12 頁的小繪本，聽聽內心最真實的聲音。
+        </p>
+
+        <!-- 三個手繪風資訊小貼紙 -->
+        <div class="grid grid-cols-3 gap-2.5 w-full mt-5">
+          <div class="bg-[#FFFDF9] rounded-2xl p-2.5 border-[1.6px] border-cocoa/80 text-center">
+            <span class="text-base block">🍂</span>
+            <span class="text-xs font-bold text-cocoa block mt-0.5">12 題情境</span>
+            <span class="text-[10px] text-cocoalight">心理學 ECR-S</span>
+          </div>
+          <div class="bg-[#FFFDF9] rounded-2xl p-2.5 border-[1.6px] border-cocoa/80 text-center">
+            <span class="text-base block">🕯️</span>
+            <span class="text-xs font-bold text-cocoa block mt-0.5">約 2 分鐘</span>
+            <span class="text-[10px] text-cocoalight">憑第一直覺作答</span>
+          </div>
+          <div class="bg-[#FFFDF9] rounded-2xl p-2.5 border-[1.6px] border-cocoa/80 text-center">
+            <span class="text-base block">🎨</span>
+            <span class="text-xs font-bold text-cocoa block mt-0.5">專屬圖鑑</span>
+            <span class="text-[10px] text-cocoalight">四象限角色解析</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部手繪按鈕 -->
+      <div class="pb-2 space-y-2.5">
+        <button id="btn-start" type="button" class="w-full py-4 px-6 bg-terracotta hover:bg-[#D56B4E] text-[#FFFDF9] font-bold text-base hand-drawn-box transition-transform active:translate-y-1 flex items-center justify-center gap-2 cursor-pointer">
+          <span>翻開第一頁・開始測驗</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </button>
+        <p class="text-[11px] text-center text-cocoalight/80">
+          改編自 Brennan & Fraley 成人依附量表 · 陪伴你溫柔認識自己
+        </p>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         畫面 2：一頁一題作答介面 (Storybook Pages)
+         ========================================== -->
+    <section id="screen-quiz" class="hidden flex-1 flex flex-col justify-between p-5 sm:p-6">
+      <!-- 頂部手繪小星星進度路徑與 Part 徽章 -->
+      <header class="pt-1 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span id="quiz-part-badge" class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 bg-mustard/55 text-cocoa hand-drawn-pill">
+            <span>✨</span> Part 1 · 內心安全感雷達
+          </span>
+          <span class="text-xs font-bold text-cocoalight bg-[#FFFDF9] px-2.5 py-1 rounded-full border border-cocoa/30 tabular-nums">
+            第 <strong id="quiz-current-num" class="text-cocoa text-sm">1</strong> / 12 頁
+          </span>
+        </div>
+
+        <!-- 手繪進度小路徑（12 顆小星星路徑） -->
+        <div class="bg-[#FFFDF9]/90 rounded-2xl px-3 py-2 border border-cocoa/25 flex items-center justify-between gap-1" id="star-progress-track">
+          <!-- 12 顆進度小星星由 JS 動態生成 -->
+        </div>
+      </header>
+
+      <!-- 中央題目繪本卡片（含每題專屬原創手繪 SVG 微插圖） -->
+      <div class="my-auto py-3 flex-1 flex flex-col justify-center">
+        <div id="question-card-wrapper" class="bg-[#FFFDF9] p-5 sm:p-6 hand-drawn-box flex flex-col justify-between min-h-[295px] relative">
+          <!-- 角落小紙膠帶裝飾 -->
+          <div class="w-14 h-4 bg-mustard/60 border border-cocoa/30 rounded-xs absolute -top-2.5 left-1/2 -translate-x-1/2 -rotate-2"></div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span id="question-index-label" class="text-[11px] font-bold tracking-wider uppercase text-cocoalight">PAGE 01</span>
+              <span id="question-selected-pill" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-paperdark text-cocoalight">
+                請點選下方貼紙分數
+              </span>
+            </div>
+
+            <!-- 情境呼應手繪感 SVG 小插圖容器 -->
+            <div id="question-illustration" class="w-28 h-24 mx-auto my-2 flex items-center justify-center">
+              <!-- 由 JS 根據題號注入對應的手繪 SVG 插畫 -->
+            </div>
+
+            <h2 id="question-text" class="font-serif text-[17px] sm:text-[19px] font-bold text-cocoa leading-relaxed text-center px-1">
+              <!-- 題目文字由 JS 填入 -->
+            </h2>
+          </div>
+
+          <p class="text-[11px] text-center text-cocoalight/85 mt-4 pt-2.5 border-t border-dashed border-cocoa/20">
+            🌿 回想你在戀愛或最親近友情中的真實第一直覺
+          </p>
+        </div>
+      </div>
+
+      <!-- 底部手繪貼紙感 1～7 分量表按鈕與返回控制 -->
+      <footer class="space-y-3 pb-1">
+        <div class="bg-[#FFFDF9] rounded-2xl p-3.5 border-[1.8px] border-cocoa shadow-[2px_3px_0px_rgba(61,52,47,0.12)]">
+          <div class="flex justify-between items-center text-[11px] font-bold text-cocoalight mb-2.5 px-0.5">
+            <span>1 · 非常不同意</span>
+            <span>4 · 普通</span>
+            <span>7 · 非常同意</span>
+          </div>
+
+          <div id="likert-buttons-grid" class="grid grid-cols-7 gap-1.5">
+            <!-- 1 到 7 分手繪貼紙按鈕由 JS 生成 -->
+          </div>
+        </div>
+
+        <!-- 底部導覽列：返回上一頁 ＋ 下一頁按鈕 -->
+        <div class="flex items-center justify-between gap-2.5">
+          <button id="btn-prev" type="button" class="px-3.5 py-3 bg-[#FFFDF9] hover:bg-paperdark text-cocoa font-bold text-xs hand-drawn-sticker flex items-center justify-center gap-1 disabled:opacity-35 disabled:pointer-events-none cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>返回上一頁</span>
+          </button>
+
+          <button id="btn-next" type="button" class="flex-1 py-3 px-4 bg-cocoa hover:bg-[#2C2521] text-[#FFFDF9] font-bold text-xs sm:text-sm hand-drawn-sticker flex items-center justify-center gap-1.5 disabled:opacity-35 disabled:pointer-events-none cursor-pointer">
+            <span id="btn-next-text">翻到下一頁</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- 自動翻頁小開關 -->
+        <div class="flex items-center justify-center">
+          <label class="inline-flex items-center gap-1.5 text-[11px] font-medium text-cocoalight cursor-pointer select-none">
+            <input id="toggle-auto-advance" type="checkbox" checked class="w-3.5 h-3.5 rounded accent-terracotta border-cocoa">
+            <span>點選貼紙分數後自動翻下一頁</span>
+          </label>
+        </div>
+      </footer>
+    </section>
+
+    <!-- ==========================================
+         畫面 3：結果分析頁 (Storybook Character Report)
+         ========================================== -->
+    <section id="screen-result" class="hidden flex-1 flex flex-col p-5 sm:p-6 space-y-4 overflow-y-auto no-scrollbar">
+      
+      <!-- 頂部繪本圖鑑角色主卡片 -->
+      <div id="result-hero-card" class="p-5 sm:p-6 bg-[#FFFDF9] hand-drawn-box relative anim-next">
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <span id="result-badge" class="inline-block text-[11px] font-bold px-3 py-1 bg-sage/30 text-cocoa hand-drawn-pill">
+            第一象限：低焦慮 ＋ 低逃避
+          </span>
+          <span class="text-[11px] font-bold text-cocoalight">✨ 專屬繪本圖鑑</span>
+        </div>
+
+        <!-- 專屬手繪人格角色 SVG 插畫舞台 -->
+        <div id="result-character-art" class="w-44 h-36 mx-auto my-2 flex items-center justify-center anim-float">
+          <!-- 由 JS 注入對應的四種依附角色原創手繪 SVG -->
+        </div>
+
+        <div class="text-center">
+          <h1 id="result-title" class="font-serif text-2xl font-bold text-cocoa tracking-tight">
+            安全型依附（Secure）
+          </h1>
+          <p id="result-subtitle" class="text-sm font-bold text-sage mt-1">
+            陽光向日葵 · 溫暖雙人小屋
+          </p>
+        </div>
+
+        <!-- 雙維度 X / Y 平均分數小貼紙 -->
+        <div class="grid grid-cols-2 gap-2.5 mt-4 pt-4 border-t border-dashed border-cocoa/25">
+          <div class="bg-paper rounded-2xl p-3 border-[1.6px] border-cocoa/75">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-cocoa">依附焦慮 (X軸)</span>
+              <span id="tag-anxiety" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-mustard/60 text-cocoa">低度</span>
+            </div>
+            <div class="mt-1 flex items-baseline gap-1">
+              <span id="score-anxiety" class="text-xl font-bold text-terracotta tabular-nums">2.50</span>
+              <span class="text-[11px] text-cocoalight">/ 7.00</span>
+            </div>
+          </div>
+
+          <div class="bg-paper rounded-2xl p-3 border-[1.6px] border-cocoa/75">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-bold text-cocoa">依附逃避 (Y軸)</span>
+              <span id="tag-avoidance" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sage/35 text-cocoa">低度</span>
+            </div>
+            <div class="mt-1 flex items-baseline gap-1">
+              <span id="score-avoidance" class="text-xl font-bold text-[#4A7C64] tabular-nums">2.50</span>
+              <span class="text-[11px] text-cocoalight">/ 7.00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 手繪水彩風 SVG 雙維度四象限座標雷達圖 -->
+      <div class="bg-[#FFFDF9] p-4 sm:p-5 hand-drawn-box">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-bold text-cocoa flex items-center gap-1.5">
+            <span>🧭</span> 你的雙維度星象座標圖
+          </h3>
+          <span class="text-[11px] font-bold text-cocoalight bg-paperdark px-2.5 py-0.5 rounded-full border border-cocoa/20">分界線 4.0</span>
+        </div>
+
+        <div class="w-full aspect-square max-w-[330px] mx-auto select-none">
+          <svg id="quadrant-svg" viewBox="0 0 400 400" class="w-full h-full overflow-visible">
+            <!-- 水彩暈染四象限色塊 -->
+            <rect x="52" y="32" width="158" height="158" fill="#81B29A" opacity="0.24" rx="14" id="quad-avoidant" />
+            <rect x="210" y="32" width="158" height="158" fill="#D4728C" opacity="0.22" rx="14" id="quad-fearful" />
+            <rect x="52" y="190" width="158" height="158" fill="#F2CC8F" opacity="0.34" rx="14" id="quad-secure" />
+            <rect x="210" y="190" width="158" height="158" fill="#E07A5F" opacity="0.24" rx="14" id="quad-anxious" />
+
+            <!-- 象限手繪標籤 -->
+            <text x="131" y="64" text-anchor="middle" class="text-[12px] font-bold fill-[#3D342F]">逃避／冷漠型</text>
+            <text x="131" y="81" text-anchor="middle" class="text-[10px] fill-[#7A6C63]">孤島小狐狸 · 低焦慮高逃避</text>
+
+            <text x="289" y="64" text-anchor="middle" class="text-[12px] font-bold fill-[#3D342F]">矛盾／恐懼逃避型</text>
+            <text x="289" y="81" text-anchor="middle" class="text-[10px] fill-[#7A6C63]">圍巾小刺蝟 · 高焦慮高逃避</text>
+
+            <text x="131" y="316" text-anchor="middle" class="text-[12px] font-bold fill-[#3D342F]">安全型依附</text>
+            <text x="131" y="333" text-anchor="middle" class="text-[10px] fill-[#7A6C63]">陽光向日葵 · 低焦慮低逃避</text>
+
+            <text x="289" y="316" text-anchor="middle" class="text-[12px] font-bold fill-[#3D342F]">焦慮／先佔型</text>
+            <text x="289" y="333" text-anchor="middle" class="text-[10px] fill-[#7A6C63]">敏感小兔子 · 高焦慮低逃避</text>
+
+            <!-- 手繪虛線輔助網格 -->
+            <g stroke="#7A6C63" stroke-width="0.7" stroke-dasharray="2,4" opacity="0.45">
+              <line x1="104.7" y1="32" x2="104.7" y2="348" />
+              <line x1="157.3" y1="32" x2="157.3" y2="348" />
+              <line x1="262.7" y1="32" x2="262.7" y2="348" />
+              <line x1="315.3" y1="32" x2="315.3" y2="348" />
+              <line x1="52" y1="84.7" x2="368" y2="84.7" />
+              <line x1="52" y1="137.3" x2="368" y2="137.3" />
+              <line x1="52" y1="242.7" x2="368" y2="242.7" />
+              <line x1="52" y1="295.3" x2="368" y2="295.3" />
+            </g>
+
+            <!-- 手繪雙線外框與 4.0 分主十字線 -->
+            <rect x="52" y="32" width="316" height="316" fill="none" stroke="#3D342F" stroke-width="2" rx="14" />
+            <line x1="210" y1="32" x2="210" y2="348" stroke="#3D342F" stroke-width="1.6" stroke-dasharray="5,4" />
+            <line x1="52" y1="190" x2="368" y2="190" stroke="#3D342F" stroke-width="1.6" stroke-dasharray="5,4" />
+
+            <!-- 座標刻度 -->
+            <text x="52" y="366" text-anchor="middle" class="text-[11px] fill-[#7A6C63] font-bold">1.0</text>
+            <text x="210" y="366" text-anchor="middle" class="text-[11px] fill-[#3D342F] font-bold">4.0</text>
+            <text x="368" y="366" text-anchor="middle" class="text-[11px] fill-[#7A6C63] font-bold">7.0</text>
+            <text x="210" y="389" text-anchor="middle" class="text-[12px] font-bold fill-[#E07A5F]">依附焦慮 (X 軸) →</text>
+
+            <text x="42" y="348" text-anchor="end" dominant-baseline="middle" class="text-[11px] fill-[#7A6C63] font-bold">1.0</text>
+            <text x="42" y="190" text-anchor="end" dominant-baseline="middle" class="text-[11px] fill-[#3D342F] font-bold">4.0</text>
+            <text x="42" y="32" text-anchor="end" dominant-baseline="middle" class="text-[11px] fill-[#7A6C63] font-bold">7.0</text>
+            <text x="14" y="190" text-anchor="middle" transform="rotate(-90, 14, 190)" class="text-[12px] font-bold fill-[#4A7C64]">依附逃避 (Y 軸) →</text>
+
+            <!-- 投影虛線 -->
+            <line id="proj-line-x" x1="210" y1="190" x2="210" y2="348" stroke="#E07A5F" stroke-width="1.8" stroke-dasharray="3,3" />
+            <line id="proj-line-y" x1="210" y1="190" x2="52" y2="190" stroke="#E07A5F" stroke-width="1.8" stroke-dasharray="3,3" />
+
+            <!-- 發光手繪星星落點與座標標籤 -->
+            <g id="user-point-group" transform="translate(210, 190)">
+              <circle id="point-pulse" cx="0" cy="0" r="15" fill="#F2CC8F" class="star-pulse" />
+              <!-- 手繪五角星星 -->
+              <path id="point-star" d="M0 -11 L3.2 -3.6 L11.2 -2.8 L5.1 2.5 L6.9 10.4 L0 6.2 L-6.9 10.4 L-5.1 2.5 L-11.2 -2.8 L-3.2 -3.6 Z" fill="#F2CC8F" stroke="#3D342F" stroke-width="1.8" stroke-linejoin="round" />
+              <g id="point-tooltip" transform="translate(0, -21)">
+                <rect x="-44" y="-14" width="88" height="20" rx="8" fill="#3D342F" />
+                <text id="point-coord-text" x="0" y="-1" text-anchor="middle" class="text-[10px] font-bold fill-[#FFFDF9]">4.00, 4.00</text>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- 繪本故事解析三張卡片 -->
+      <div class="space-y-3">
+        <div class="bg-[#FFFDF9] rounded-2xl p-4 border-[1.8px] border-cocoa shadow-[2px_3px_0px_rgba(61,52,47,0.1)]">
+          <h4 class="font-bold text-cocoa text-xs tracking-wider mb-1.5 flex items-center gap-1.5">
+            <span>🧭</span> 座標特徵
+          </h4>
+          <p id="result-trait" class="text-sm text-cocoa/90 leading-relaxed"></p>
+        </div>
+
+        <div class="bg-[#FFFDF9] rounded-2xl p-4 border-[1.8px] border-cocoa shadow-[2px_3px_0px_rgba(61,52,47,0.1)]">
+          <h4 class="font-bold text-cocoa text-xs tracking-wider mb-1.5 flex items-center gap-1.5">
+            <span>💬</span> 關係中的你
+          </h4>
+          <p id="result-behavior" class="text-sm text-cocoa/90 leading-relaxed"></p>
+        </div>
+
+        <div id="result-growth-card" class="bg-[#F9F1E4] rounded-2xl p-4 border-[1.8px] border-cocoa shadow-[2px_3px_0px_rgba(61,52,47,0.1)]">
+          <h4 class="font-bold text-cocoa text-xs tracking-wider mb-1.5 flex items-center gap-1.5">
+            <span>💌</span> 給你的溫柔成長處方籤
+          </h4>
+          <p id="result-growth" class="text-sm text-cocoa/90 leading-relaxed"></p>
+          <div class="mt-2.5 pt-2.5 border-t border-dashed border-cocoa/25 text-xs font-bold text-terracotta">
+            <span>🌿 日常小練習：</span><span id="result-tip" class="text-cocoa font-medium"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 底部操作按鈕列 -->
+      <div class="pt-1 pb-5 space-y-2.5">
+        <button id="btn-copy" type="button" class="w-full py-3.5 px-5 bg-terracotta hover:bg-[#D56B4E] text-[#FFFDF9] font-bold text-sm hand-drawn-box transition-transform active:translate-y-1 flex items-center justify-center gap-2 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+          </svg>
+          <span id="copy-btn-text">一鍵複製繪本結果摘要</span>
+        </button>
+
+        <button id="btn-restart" type="button" class="w-full py-3 px-5 bg-[#FFFDF9] hover:bg-paperdark text-cocoa font-bold text-sm hand-drawn-sticker flex items-center justify-center gap-1.5 cursor-pointer">
+          <svg class="w-4 h-4 text-cocoalight" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>重新翻閱測驗</span>
+        </button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 隱藏的複製用文字框 -->
+  <textarea id="copy-helper" class="sr-only" aria-hidden="true"></textarea>
+
+  <script>
+    // 1. 12 道題目與對應的手繪情境微插圖 SVG
+    const QUESTIONS = [
+      // 1-6 題：依附焦慮 (Anxiety)
+      {
+        id: 1,
+        dimension: 'anxiety',
+        text: '我常常擔心伴侶（或非常在乎的人）並不是真心愛我，或者隨時可能不再需要我。',
+        svg: `<svg viewBox="0 0 110 90" class="w-full h-full" fill="none">
+          <circle cx="55" cy="46" r="32" fill="#F2CC8F" opacity="0.3" />
+          <!-- 漂浮的蒲公英與小愛心 -->
+          <path d="M55 74 Q52 55 56 38" stroke="#3D342F" stroke-width="2" stroke-linecap="round" />
+          <circle cx="56" cy="34" r="14" stroke="#3D342F" stroke-width="1.6" stroke-dasharray="2 3" fill="#FFFDF9" />
+          <path d="M56 31 C56 28, 51 27, 51 31 C51 34, 56 37, 56 37 C56 37, 61 34, 61 31 C61 27, 56 28, 56 31 Z" fill="#E07A5F" stroke="#3D342F" stroke-width="1.4" />
+          <path d="M76 22 L82 17 M78 26 L85 24" stroke="#3D342F" stroke-width="1.5" stroke-linecap="round" />
+          <circle cx="85" cy="15" r="2" fill="#E07A5F" />
+        </svg>`
+      },
+      {
+        id: 2,
+        dimension: 'anxiety',
+        text: '當親近的人沒有像我希望的那樣及時回應我時，我會感到非常沮喪或焦慮。',
+        svg: `<svg viewBox="0 0 110 90" class="w-full h-full" fill="none">
+          <circle cx="55" cy="46" r="32" fill="#E07A5F" opacity="0.2" />
+          <!-- 等待回音的小信封與小沙漏 -->
+          <rect x="26" y="34" width="44" height="30" rx="6" fill="#FFFDF9" stroke="#3D342F" stroke-width="2" />
+          <path d="M27 36 L48 51 L69 36" stroke="#3D342F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="48" cy="49" r="4" fill="#E07A5F" stroke="#3D342F" stroke-width="1.4" />
+          <!-- 小時鐘 -->
+          <circle cx="78" cy="30" r="11" fill="#F2CC8F" stroke="#3D342F" stroke-width="1.8" />
+          <path d="M78 24 V30 L82 32" stroke="#3D342F" stroke-width="1.8" stroke-linecap="round" />
+        </svg>`
+      },
+      {
+        id: 3,
+        dimension: 'anxiety',
+        text: '我很害怕被親近的人拋棄，只要感覺對方稍微冷淡一點，就會忍不住胡思亂想。',
+        svg: `<svg viewBox="0 0 110 90" class="w-full h-full" fill="none">
+          <circle cx="55" cy="46" r="32" fill="#F2CC8F" opacity="0.28" />
+          <!-- 飄來一朵小烏雲與胡思亂想的毛線球 -->
+          <path d="M35 58 C27 58, 24 47, 32 44 C34 34, 49 32, 55 40 C62 34, 76 38, 76 47 C83 49, 81 58, 73 58 Z" fill="#FFFDF9" stroke="#3D342F" stroke-width="2" stroke-linejoin="round" />
+          <path d="M44 48 Q50 42 55 48 Q60 54 65 47" stroke="#E07A5F" stroke-width="2" stroke-linecap="round" />
+          <circle cx="38" cy="67" r="3" fill="#FFFDF9" stroke="#3D342F" stroke-width="1.6" />
+          <circle cx="31" cy="74" r="2" fill="#FFFDF9" stroke="#3D342F" stroke-width="1.5" />
+        </svg>`
+      },
+      {
+        id: 4,
+        dimension: 'anxiety',
+        text: '我需要對方頻繁地給予我肯定、陪伴或保證，才能確認這段關係是穩固的。',
+        svg: `<svg viewBox="0 0 110 90" class="w-full h-full" fill="none">
+          <circle cx="55" cy="46" r="32" fill="#E07A5F" opacity="0.2" />
+          <!-- 兩隻緊緊勾在一起的小手指 / 雙人溫暖茶杯 -->
+          <rect x="28" y="42" width="22" height="24" rx="5" fill="#F2CC8F" stroke="#3D342F" stroke-width="2" />
+          <path d="M28 48 H23 C20 48, 20 58, 23 58 H28" stroke="#3D342F" stroke-width="2" />
+          <rect x="60" y="42" width="22" height="24" rx="5" fill="#81B29A" stroke="#3D342F" stroke-width="2" />
+          <path d="M82 48 H87 C90 48, 90 58, 87 58 H82" stroke="#3D342F" stroke-width="2" />
+          <path d="M55 27 C55 23, 49 22, 49 27 C49 31, 55 35, 55 35 C55 35, 61 31, 61 27 C61 22, 55 23, 55 27 Z" fill="#E07A5F" stroke="#3D342F" stroke-width="1.6" />
+        </svg>`
+      },
+      {
+        id: 5,
+        dimension: 'anxiety',
+        text: '我常覺得自己對這段關係的投入與在意程度，遠遠超過對方對我的付出。',
+        svg: `<svg viewBox="0 0 110 90" class="w-full h-full" fill="none">
+          <circle cx="55" cy="46" r="32" fill="#F2CC8F" opacity="0.28" />
+          <!-- 微微傾斜的小天平 -->
+          <path d="M55 26 V68 M42 68 H68" stroke="#3D342F" stroke-width="2.2" stroke-linecap="round" />
+          <path d="M28 44 L82 34" stroke="#3D342F" stroke-width="2.2" stroke-linecap="round" />
+          <!-- 左邊大愛心（較重） -->
+          <path d="M31 53 C31 48, 23 47, 23 53 C23 58, 31 63, 31 63 C31 63, 39 58, 39 53 C39 47, 31 48, 31 53 Z" fill="#E07A5F" stroke="#3D342F" stroke-width="1.7" />
+          <!-- 右邊小星星（較輕） -->
+          <circle cx="80" cy="44" r="5" fill="#F2CC8F" stroke="#3D342F" stroke-width="1.7" />
+        </svg>`
+      },
+      {
+        id: 6,
+        dimension: 'anxiety',
+        text: '當我沒辦法第一時間聯繫上對方時，我的心情會變得很浮躁、難以專心做其他事。',
+        svg: `<svg viewBox="0 0 110 90" class="w-full h-full" fill="none">
+          <circle cx="55" cy="46" r="32" fill="#E07A5F" opacity="0.2" />
+          <!-- 訊號雷達波紋與震動的小手機 -->
+          <rect x="43" y="28" width="24" height="38" rx="6" fill="#FFFDF9" stroke="#3D342F" stroke-width="2" />
+          <circle cx="55" cy="59" r="2" fill="#3D342F" />
+          <path d="M35 36 Q31 46 35 56" stroke="#E07A5F" stroke-width="2" stroke-linecap="round" />
+          <path d="M75 36 Q79 46 75 56" stroke="#E07A5F" stroke-width="2" stroke-linecap="round" />
+          <circle cx="55" cy="44" r="4" fill="#F2CC8F" stroke="#3D342F" stroke-width="1.5" />
+        </svg>`
+      },
+      // 7-12 題：依附逃避 (Avoidance)
+      {
+        id: 7,
+        dimension: 'avoidance',
+        text: '當別人想在情感上跟我太過親近、或試圖深入了解我的內心時，我會感到不自在甚至想退縮。',
+        svg: `<svg viewBox="0 0 110 90" class="w-full h-full" fill="none">
+          <circle cx="55" cy="46" r="32" fill="#81B29A" opacity="0.25" />
+          <!-- 兩顆心的舒適安全距離尺 -->
+          <path d="M32 42 C32 38, 26 37, 26 42 C26 46, 32 50, 32 50 C32 50, 38 46, 38 42 C38 37, 32 38, 32 42 Z" fill="#F2CC8F" stroke="#3D342F" stroke-width="1.7" />
+          <path d="M78 42 C78 38, 72 37, 72 42 C72 46, 78 50, 78 50 C78 50, 84 46, 84 42 C84 37, 78 38, 78 42 Z" fill="#81B29A" stroke="#3D342F" stroke-width="1.7" />
+          <path d="M44 44 H66" stroke="#3D342F" stroke-width="1.8" stroke-dasharray="3 3" stroke-linecap="round" />
+          <path d="M47 41 L43 44 L47 47 M63 41 L67 44 L63 47" stroke="#3D342F" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>`
+      },
+      {
+        id: 8,
+        dimension: 'avoidance',
+        text: '我不太習慣向伴侶或好友坦露自己內心深處的脆弱、恐懼與真實煩惱。',
+        svg: `<svg viewBox="0 0 110 90" class="w-full h-full" fill="none">
+          <circle cx="55" cy="46" r="32" fill="#81B29A" opacity="0.25" />
+          <!-- 上鎖的秘密小日記本 -->
+          <rect x="37" y="26" width="36" height="42" rx="6" fill="#81B29A" stroke="#3D342F" stroke-width="2" />
+          <line x1="44" y1="26" x2="44" y2="68" stroke="#3D342F" stroke-width="1.8" />
+          <rect x="52" y="44" width="12" height="10" rx="2.5" fill="#F2CC8F" stroke="#3D342F" stroke-width="1.6" />
+          <path d="M55 44 V40 C55 38, 61 38, 61 40 V44" stroke="#3D342F" stroke-width="1.6" stroke-linecap="round" />
+        </svg>`
+      },
+      {
+        id: 9,
+        dimension: 'avoidance',
+        text: '在遇到困難或情緒低落時，我寧可完全靠自己消化，也不喜歡向親近的人求助。',
+        svg: `<svg viewBox="0 0 110 90" class="w-full h-full" fill="none">
+          <circle cx="55" cy="46" r="32" fill="#81B29A" opacity="0.25" />
+          <!-- 自己撐起的一把小雨傘 -->
+          <path d="M31 46 C31 31, 79 31, 79 46 Z" fill="#F2CC8F" stroke="#3D342F" stroke-width="2" stroke-linejoin="round" />
+          <path d="M55 46 V63 C55 67, 49 67, 49 63" stroke="#3D342F" stroke-width="2.2" stroke-linecap="round" />
+          <line x1="36" y1="24" x2="34" y2="29" stroke="#81B29A" stroke-width="1.8" stroke-linecap="round" />
+          <line x1="74" y1="22" x2="72" y2="27" stroke="#81B29A" stroke-width="1.8" stroke-linecap="round" />
+        </svg>`
+      },
+      {
+        id: 10,
+        dimension: 'avoidance',
+        text: '我覺得太過依賴別人是一件很危險、容易讓自己失去主導權與安全感的事。',
+        svg: `<svg viewBox="0 0 110 90" class="w-full h-full" fill="none">
+          <circle cx="55" cy="46" r="32" fill="#81B29A" opacity="0.25" />
+          <!-- 獨立航行的小紙船與船舵 -->
+          <path d="M28 54 L40 66 H70 L82 54 H28 Z" fill="#FFFDF9" stroke="#3D342F" stroke-width="2" stroke-linejoin="round" />
+          <path d="M55 54 V28 L74 48 H55" fill="#81B29A" stroke="#3D342F" stroke-width="2" stroke-linejoin="round" />
+          <path d="M24 72 Q40 68 55 72 Q70 76 86 72" stroke="#3D342F" stroke-width="1.6" stroke-linecap="round" opacity="0.6" />
+        </svg>`
+      },
+      {
+        id: 11,
+        dimension: 'avoidance',
+        text: '當關係中出現情緒衝突或需要深度溝通時，我的第一反應是想拉開距離、冷靜一下。',
+        svg: `<svg viewBox="0 0 110 90" class="w-full h-full" fill="none">
+          <circle cx="55" cy="46" r="32" fill="#81B29A" opacity="0.25" />
+          <!-- 森林裡的安靜小木屋 -->
+          <path d="M34 46 L55 28 L76 46" stroke="#3D342F" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          <rect x="40" y="45" width="30" height="22" rx="3" fill="#FFFDF9" stroke="#3D342F" stroke-width="2" />
+          <rect x="51" y="54" width="8" height="13" fill="#F2CC8F" stroke="#3D342F" stroke-width="1.6" />
+          <path d="M67 26 Q70 21 67 17" stroke="#7A6C63" stroke-width="1.6" stroke-linecap="round" />
+        </svg>`
+      },
+      {
+        id: 12,
+        dimension: 'avoidance',
+        text: '即使是很親密的關係，我也必須保留很大一塊不讓對方介入的個人空間與秘密。',
+        svg: `<svg viewBox="0 0 110 90" class="w-full h-full" fill="none">
+          <circle cx="55" cy="46" r="32" fill="#81B29A" opacity="0.25" />
+          <!-- 專屬秘密基地小帳篷 -->
+          <path d="M28 64 L55 28 L82 64 Z" fill="#F2CC8F" stroke="#3D342F" stroke-width="2.2" stroke-linejoin="round" />
+          <path d="M46 64 L55 46 L64 64 Z" fill="#3D342F" />
+          <circle cx="55" cy="21" r="3" fill="#81B29A" stroke="#3D342F" stroke-width="1.5" />
+        </svg>`
+      }
+    ];
+
+    // 2. 四種依附人格繪本角色與深度解析定義
+    const ATTACHMENT_PROFILES = {
+      secure: {
+        quadrantId: 'quad-secure',
+        badge: '第一象限：低焦慮（< 4）＋ 低逃避（< 4）',
+        title: '安全型依附（Secure）',
+        subtitle: '陽光向日葵 · 溫暖雙人小屋',
+        trait: '內心自我價值感高，同時對他人抱持正向信任。你相信自己值得被愛，也相信親近的人是可靠且善意的。',
+        behavior: '你既能享受親密無間的分享，也能自在地面對獨處。遇到伴侶忙碌或發生爭執時，你不會輕易將其解讀為「你不愛我了」，也不會用冷戰逃避問題，而是願意就事論事、理性溝通。',
+        growth: '你擁有極佳的情緒穩定度，就像一座讓人安心的雙人小屋。但要記得在與高焦慮或高逃避對象相處時，別過度承擔對方的情緒課題，適時設立健康界線。',
+        tip: '在照顧身邊人情緒的同時，也別忘了主動向信任的人分享你的脆弱與需要喔！',
+        characterSvg: `<svg viewBox="0 0 180 140" class="w-full h-full overflow-visible" fill="none">
+          <!-- 水彩暖黃光暈 -->
+          <circle cx="90" cy="72" r="56" fill="#F2CC8F" opacity="0.38" />
+          <ellipse cx="90" cy="126" rx="64" ry="8" fill="#E6DAC8" />
+          <!-- 陽光向日葵花瓣 -->
+          <g transform="translate(66, 70)">
+            <circle cx="0" cy="0" r="28" fill="#F2CC8F" stroke="#3D342F" stroke-width="2" stroke-dasharray="6 4" />
+            <circle cx="0" cy="0" r="20" fill="#F4A261" stroke="#3D342F" stroke-width="2.2" />
+            <!-- 笑臉 -->
+            <circle cx="-6" cy="-2" r="2" fill="#3D342F" />
+            <circle cx="6" cy="-2" r="2" fill="#3D342F" />
+            <path d="M-4 4 Q0 8 4 4" stroke="#3D342F" stroke-width="2" stroke-linecap="round" />
+            <ellipse cx="-10" cy="3" rx="3.5" ry="2" fill="#E07A5F" opacity="0.7" />
+            <ellipse cx="10" cy="3" rx="3.5" ry="2" fill="#E07A5F" opacity="0.7" />
+            <!-- 花莖與葉子 -->
+            <path d="M0 20 V54" stroke="#3D342F" stroke-width="2.4" stroke-linecap="round" />
+            <path d="M0 36 Q-14 30 -16 38 Q-10 43 0 38" fill="#81B29A" stroke="#3D342F" stroke-width="1.8" />
+          </g>
+          <!-- 旁邊溫暖的小屋 -->
+          <g transform="translate(116, 82)">
+            <path d="M-22 6 L0 -14 L22 6" fill="#E07A5F" stroke="#3D342F" stroke-width="2.2" stroke-linejoin="round" />
+            <rect x="-17" y="5" width="34" height="36" rx="4" fill="#FFFDF9" stroke="#3D342F" stroke-width="2.2" />
+            <rect x="-5" y="21" width="10" height="20" rx="2" fill="#F2CC8F" stroke="#3D342F" stroke-width="1.8" />
+            <!-- 煙囪小愛心 -->
+            <path d="M12 -18 C12 -21, 7 -22, 7 -18 C7 -15, 12 -12, 12 -12 C12 -12, 17 -15, 17 -18 C17 -22, 12 -21, 12 -18 Z" fill="#E07A5F" stroke="#3D342F" stroke-width="1.4" />
+          </g>
+        </svg>`
+      },
+      anxious: {
+        quadrantId: 'quad-anxious',
+        badge: '第二象限：高焦慮（≥ 4）＋ 低逃避（< 4）',
+        title: '焦慮／先佔型依附（Anxious）',
+        subtitle: '抱著愛心的敏感小兔子 · 雷達小鹿',
+        trait: '對關係高度投入且極度重視，但內心深處對「被拒絕」與「被遺棄」的敏感度極高，安全感容易隨對方的反應劇烈波動。',
+        behavior: '你在感情裡全心全意，甚至願意為了維持關係而委屈自己、過度討好。然而，一旦對方的回應不如預期，你的雷達就會立刻啟動「災難化想像」，透過頻繁確認或試探來索取安全感。',
+        growth: '試著把「對方的行為」與「我的自我價值」輕輕分開。當焦慮感升起時，先抱抱自己 15 分鐘，區分「客觀事實」與「內心小劇場」。',
+        tip: '練習用不帶指責的語言直接說出需要（例如把「你都不理我」換成「我今天有點累，好想聽聽你的聲音」）。',
+        characterSvg: `<svg viewBox="0 0 180 140" class="w-full h-full overflow-visible" fill="none">
+          <!-- 水彩暖橘光暈 -->
+          <circle cx="90" cy="72" r="56" fill="#E07A5F" opacity="0.22" />
+          <ellipse cx="90" cy="126" rx="56" ry="8" fill="#E6DAC8" />
+          <!-- 敏感小兔子 -->
+          <g transform="translate(90, 76)">
+            <!-- 長耳朵（敏感雷達） -->
+            <ellipse cx="-11" cy="-34" rx="6" ry="18" transform="rotate(-10 -11 -34)" fill="#FFFDF9" stroke="#3D342F" stroke-width="2.2" />
+            <ellipse cx="-11" cy="-34" rx="2.5" ry="11" transform="rotate(-10 -11 -34)" fill="#F4A261" opacity="0.6" />
+            <ellipse cx="11" cy="-34" rx="6" ry="18" transform="rotate(10 11 -34)" fill="#FFFDF9" stroke="#3D342F" stroke-width="2.2" />
+            <ellipse cx="11" cy="-34" rx="2.5" ry="11" transform="rotate(10 11 -34)" fill="#F4A261" opacity="0.6" />
+            <!-- 頭部與身體 -->
+            <circle cx="0" cy="-10" r="21" fill="#FFFDF9" stroke="#3D342F" stroke-width="2.2" />
+            <ellipse cx="0" cy="22" rx="19" ry="22" fill="#FFFDF9" stroke="#3D342F" stroke-width="2.2" />
+            <!-- 水汪汪大眼睛與腮紅 -->
+            <circle cx="-7" cy="-11" r="2.5" fill="#3D342F" />
+            <circle cx="7" cy="-11" r="2.5" fill="#3D342F" />
+            <ellipse cx="-12" cy="-6" rx="4" ry="2.5" fill="#E07A5F" opacity="0.7" />
+            <ellipse cx="12" cy="-6" rx="4" ry="2.5" fill="#E07A5F" opacity="0.7" />
+            <path d="M-2 -5 Q0 -3 2 -5" stroke="#3D342F" stroke-width="1.8" stroke-linecap="round" />
+            <!-- 懷裡緊緊抱著的大愛心 -->
+            <path d="M0 14 C0 8, -13 6, -13 15 C-13 22, 0 30, 0 30 C0 30, 13 22, 13 15 C13 6, 0 8, 0 14 Z" fill="#E07A5F" stroke="#3D342F" stroke-width="2" stroke-linejoin="round" />
+            <!-- 小手手抱住愛心 -->
+            <path d="M-16 14 Q-10 18 -6 17" stroke="#3D342F" stroke-width="2.2" stroke-linecap="round" />
+            <path d="M16 14 Q10 18 6 17" stroke="#3D342F" stroke-width="2.2" stroke-linecap="round" />
+          </g>
+          <!-- 旁邊接收訊號的小電波 -->
+          <path d="M124 38 Q131 44 126 52" stroke="#E07A5F" stroke-width="2" stroke-linecap="round" />
+          <path d="M130 33 Q140 43 133 55" stroke="#E07A5F" stroke-width="1.8" stroke-linecap="round" opacity="0.65" />
+        </svg>`
+      },
+      avoidant: {
+        quadrantId: 'quad-avoidant',
+        badge: '第三象限：低焦慮（< 4）＋ 高逃避（≥ 4）',
+        title: '逃避／冷漠型依附（Avoidant）',
+        subtitle: '住在玻璃罩裡的小狐狸 · 雲朵孤島貓咪',
+        trait: '極度重視個人獨立與自主性，習慣透過壓抑情感需求與保持舒適距離來保護自己，避免受到傷害或失去掌控感。',
+        behavior: '你認為「靠自己最可靠」，不喜歡情緒勒索與過度黏膩的互動。當關係變得太過親密、或伴侶開始提出情感需求時，你會本能地感到窒息並啟動「抽離機制」（如變得冷淡、專注於自己的世界）。',
+        growth: '依賴並不代表軟弱或失去自由。練習在感到壓力時不直接關上門，而是嘗試打開玻璃罩的一道小縫隙，分享一點真實感受。',
+        tip: '想退縮時，給對方一個「具體的回歸時間」（例如：「我需要一個人靜一靜，晚上八點我再打給你好好聊」），能大幅減少誤會。',
+        characterSvg: `<svg viewBox="0 0 180 140" class="w-full h-full overflow-visible" fill="none">
+          <!-- 水彩鼠尾草綠光暈 -->
+          <circle cx="90" cy="72" r="56" fill="#81B29A" opacity="0.28" />
+          <ellipse cx="90" cy="126" rx="60" ry="8" fill="#E6DAC8" />
+          <!-- 玻璃罩裡的安靜小狐狸 -->
+          <g transform="translate(90, 78)">
+            <!-- 小狐狸尖耳朵 -->
+            <path d="M-16 -14 L-18 -34 L-4 -20 Z" fill="#E07A5F" stroke="#3D342F" stroke-width="2" stroke-linejoin="round" />
+            <path d="M16 -14 L18 -34 L4 -20 Z" fill="#E07A5F" stroke="#3D342F" stroke-width="2" stroke-linejoin="round" />
+            <!-- 小狐狸臉與身體 -->
+            <ellipse cx="0" cy="-6" rx="20" ry="17" fill="#E07A5F" stroke="#3D342F" stroke-width="2.2" />
+            <path d="M-19 -4 Q0 8 19 -4 Q15 11 0 11 Q-15 11 -19 -4 Z" fill="#FFFDF9" />
+            <ellipse cx="0" cy="24" rx="16" ry="18" fill="#E07A5F" stroke="#3D342F" stroke-width="2.2" />
+            <!-- 蓬鬆大尾巴捲在身旁 -->
+            <path d="M14 34 Q32 32 30 18 Q26 10 15 20" fill="#E07A5F" stroke="#3D342F" stroke-width="2.2" stroke-linejoin="round" />
+            <circle cx="29" cy="18" r="4" fill="#FFFDF9" />
+            <!-- 閉眼安靜表情 -->
+            <path d="M-10 -6 Q-7 -3 -4 -6" stroke="#3D342F" stroke-width="2" stroke-linecap="round" />
+            <path d="M4 -6 Q7 -3 10 -6" stroke="#3D342F" stroke-width="2" stroke-linecap="round" />
+            <circle cx="0" cy="0" r="2" fill="#3D342F" />
+          </g>
+          <!-- 透明保護玻璃罩 -->
+          <path d="M48 122 V66 C48 38, 132 38, 132 66 V122" stroke="#3D342F" stroke-width="2" stroke-dasharray="5 3" fill="#FFFDF9" fill-opacity="0.18" />
+          <path d="M58 54 Q66 44 78 42" stroke="#FFFDF9" stroke-width="2.5" stroke-linecap="round" />
+        </svg>`
+      },
+      fearful: {
+        quadrantId: 'quad-fearful',
+        badge: '第四象限：高焦慮（≥ 4）＋ 高逃避（≥ 4）',
+        title: '矛盾／恐懼逃避型依附（Fearful-Avoidant）',
+        subtitle: '披著柔軟圍巾的小刺蝟',
+        trait: '同時擁有「渴望被愛」與「恐懼受傷」兩股拉扯的力量，內心既懷疑自己是否值得被愛，又擔心他人會帶來傷害。',
+        behavior: '在關係初期或遠距離觀察時，你非常渴望親密與被肯定；但當對方真的走進你的心房、關係變得認真時，防禦機制會瞬間爆發，導致你出現「推開對方、說反話、時冷時熱」的矛盾行為。',
+        growth: '你的小尖刺其實是在保護曾經受過傷的柔軟內心。試著向信任的對象坦承自己的矛盾感，練習在想說反話的瞬間停頓三秒。',
+        tip: '用真實的脆弱取代尖銳的武裝（例如把「算了隨便你」換成「其實我有點在意這件事，只是不知道怎麼說」）。',
+        characterSvg: `<svg viewBox="0 0 180 140" class="w-full h-full overflow-visible" fill="none">
+          <!-- 水彩玫瑰粉紫光暈 -->
+          <circle cx="90" cy="72" r="56" fill="#D4728C" opacity="0.22" />
+          <ellipse cx="90" cy="126" rx="58" ry="8" fill="#E6DAC8" />
+          <!-- 披著柔軟圍巾的小刺蝟 -->
+          <g transform="translate(90, 82)">
+            <!-- 背後可愛的小刺刺 -->
+            <path d="M-28 16 L-34 6 L-24 2 L-28 -10 L-16 -12 L-14 -24 L-2 -20 L6 -28 L14 -18 L26 -20 L24 -8 L34 -2 L26 10 L32 20" fill="#8D7B72" stroke="#3D342F" stroke-width="2" stroke-linejoin="round" />
+            <!-- 圓滾滾身體 -->
+            <ellipse cx="0" cy="10" rx="26" ry="24" fill="#F5E6D3" stroke="#3D342F" stroke-width="2.2" />
+            <!-- 溫柔又帶點猶豫的表情 -->
+            <circle cx="-8" cy="2" r="2.4" fill="#3D342F" />
+            <circle cx="8" cy="2" r="2.4" fill="#3D342F" />
+            <ellipse cx="-13" cy="7" rx="3.8" ry="2.2" fill="#E07A5F" opacity="0.65" />
+            <ellipse cx="13" cy="7" rx="3.8" ry="2.2" fill="#E07A5F" opacity="0.65" />
+            <circle cx="0" cy="6" r="2.5" fill="#3D342F" />
+            <!-- 披著溫暖的針織圍巾 -->
+            <path d="M-21 15 Q0 23 21 15 Q22 23 0 27 Q-22 23 -21 15 Z" fill="#F2CC8F" stroke="#3D342F" stroke-width="2" stroke-linejoin="round" />
+            <path d="M8 22 L12 36 L19 34 L15 20" fill="#F2CC8F" stroke="#3D342F" stroke-width="2" stroke-linejoin="round" />
+          </g>
+          <!-- 頭頂漂浮的小愛心與小問號 -->
+          <path d="M68 38 C68 34, 62 33, 62 38 C62 42, 68 46, 68 46 C68 46, 74 42, 74 38 C74 33, 68 34, 68 38 Z" fill="#E07A5F" stroke="#3D342F" stroke-width="1.6" />
+          <text x="112" y="45" class="text-[15px] font-bold fill-[#6D6875]">?</text>
+        </svg>`
+      }
+    };
+
+    const LIKERT_TEXT = {
+      1: '1分 · 非常不同意',
+      2: '2分 · 不同意',
+      3: '3分 · 有點不同意',
+      4: '4分 · 普通／不確定',
+      5: '5分 · 有點同意',
+      6: '6分 · 同意',
+      7: '7分 · 非常同意'
+    };
+
+    // 狀態管理
+    let currentStep = 0; // 0 ~ 11
+    let answers = new Array(12).fill(null);
+    let autoAdvanceTimer = null;
+
+    // DOM 元素參照
+    const screenWelcome = document.getElementById('screen-welcome');
+    const screenQuiz = document.getElementById('screen-quiz');
+    const screenResult = document.getElementById('screen-result');
+
+    // 切換畫面函式
+    function showScreen(targetScreen) {
+      [screenWelcome, screenQuiz, screenResult].forEach(el => {
+        el.classList.add('hidden');
+      });
+      targetScreen.classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 渲染頂部 12 顆手繪進度小星星路徑
+    function renderStarProgress() {
+      const track = document.getElementById('star-progress-track');
+      track.innerHTML = '';
+
+      for (let i = 0; i < QUESTIONS.length; i++) {
+        const isCurrent = i === currentStep;
+        const isAnswered = answers[i] !== null;
+
+        const starBtn = document.createElement('button');
+        starBtn.type = 'button';
+        starBtn.title = `第 ${i + 1} 題`;
+        starBtn.className = 'p-0.5 flex items-center justify-center transition-transform cursor-pointer focus:outline-none';
+
+        let fillColor = '#EDE4D7';
+        let strokeColor = '#7A6C63';
+        let scaleClass = 'w-4 h-4';
+
+        if (isCurrent) {
+          fillColor = '#E07A5F';
+          strokeColor = '#3D342F';
+          scaleClass = 'w-5 h-5 scale-110';
+        } else if (isAnswered) {
+          fillColor = i < 6 ? '#F2CC8F' : '#81B29A';
+          strokeColor = '#3D342F';
+        }
+
+        starBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" class="${scaleClass} transition-all" fill="none">
+            <path d="M12 2.5 L14.8 8.6 L21.5 9.4 L16.5 14 L17.8 20.6 L12 17.3 L6.2 20.6 L7.5 14 L2.5 9.4 L9.2 8.6 Z"
+              fill="${fillColor}" stroke="${strokeColor}" stroke-width="2" stroke-linejoin="round" />
+          </svg>
+        `;
+
+        // 允許點擊已作答或當前題目跳轉
+        if (isAnswered || i <= currentStep) {
+          starBtn.addEventListener('click', () => {
+            if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+            const dir = i < currentStep ? 'prev' : 'next';
+            currentStep = i;
+            renderCurrentQuestion(dir);
+          });
+        }
+
+        track.appendChild(starBtn);
+      }
+    }
+
+    // 渲染單題介面
+    function renderCurrentQuestion(direction = 'next') {
+      const q = QUESTIONS[currentStep];
+      const isAnxiety = q.dimension === 'anxiety';
+      const selectedScore = answers[currentStep];
+
+      // 1. 更新頂部頁碼與 Part 溫馨徽章
+      document.getElementById('quiz-current-num').textContent = currentStep + 1;
+      renderStarProgress();
+
+      const partBadge = document.getElementById('quiz-part-badge');
+      if (isAnxiety) {
+        partBadge.innerHTML = '<span>🧡</span> Part 1 · 內心安全感雷達';
+        partBadge.className = 'inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 bg-mustard/60 text-cocoa hand-drawn-pill';
+      } else {
+        partBadge.innerHTML = '<span>🌿</span> Part 2 · 親密距離防護罩';
+        partBadge.className = 'inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 bg-sage/35 text-cocoa hand-drawn-pill';
+      }
+
+      // 2. 更新題目卡片文字、微插圖與翻頁動畫
+      const cardWrapper = document.getElementById('question-card-wrapper');
+      if (direction !== 'none') {
+        cardWrapper.classList.remove('anim-next', 'anim-prev');
+        void cardWrapper.offsetWidth;
+        cardWrapper.classList.add(direction === 'prev' ? 'anim-prev' : 'anim-next');
+      }
+
+      document.getElementById('question-index-label').textContent = `PAGE ${String(q.id).padStart(2, '0')}`;
+      document.getElementById('question-illustration').innerHTML = q.svg;
+      document.getElementById('question-text').textContent = q.text;
+
+      const selectedPill = document.getElementById('question-selected-pill');
+      if (selectedScore !== null) {
+        selectedPill.textContent = LIKERT_TEXT[selectedScore];
+        selectedPill.className = isAnxiety
+          ? 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-terracotta/20 text-terracotta border border-terracotta/40'
+          : 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-sage/30 text-[#3B6651] border border-sage/50';
+      } else {
+        selectedPill.textContent = '請點選下方貼紙分數';
+        selectedPill.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-paperdark text-cocoalight';
+      }
+
+      // 3. 渲染 1~7 分手繪貼紙感觸控按鈕
+      const grid = document.getElementById('likert-buttons-grid');
+      grid.innerHTML = '';
+      for (let score = 1; score <= 7; score++) {
+        const isSelected = selectedScore === score;
+        let btnStyle = 'bg-paper hover:bg-paperdark text-cocoa';
+
+        if (isSelected) {
+          btnStyle = isAnxiety
+            ? 'bg-terracotta text-[#FFFDF9] -translate-y-1 scale-105'
+            : 'bg-sage text-[#FFFDF9] -translate-y-1 scale-105';
+        }
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = score;
+        btn.setAttribute('aria-label', `${score} 分`);
+        btn.className = `h-12 sm:h-13 hand-drawn-sticker font-bold text-base flex items-center justify-center cursor-pointer ${btnStyle}`;
+        btn.addEventListener('click', () => handleSelectScore(score));
+        grid.appendChild(btn);
+      }
+
+      // 4. 更新導覽按鈕狀態
+      const btnPrev = document.getElementById('btn-prev');
+      btnPrev.disabled = currentStep === 0;
+
+      const btnNext = document.getElementById('btn-next');
+      const btnNextText = document.getElementById('btn-next-text');
+      btnNext.disabled = selectedScore === null;
+
+      if (currentStep === QUESTIONS.length - 1) {
+        btnNextText.textContent = '揭曉我的繪本圖鑑';
+        btnNext.classList.remove('bg-cocoa', 'hover:bg-[#2C2521]');
+        btnNext.classList.add('bg-terracotta', 'hover:bg-[#D56B4E]');
+      } else {
+        btnNextText.textContent = '翻到下一頁';
+        btnNext.classList.remove('bg-terracotta', 'hover:bg-[#D56B4E]');
+        btnNext.classList.add('bg-cocoa', 'hover:bg-[#2C2521]');
+      }
+    }
+
+    // 處理點選分數
+    function handleSelectScore(score) {
+      if (autoAdvanceTimer) {
+        clearTimeout(autoAdvanceTimer);
+        autoAdvanceTimer = null;
+      }
+
+      answers[currentStep] = score;
+      renderCurrentQuestion('none');
+
+      const isAutoAdvance = document.getElementById('toggle-auto-advance').checked;
+      if (isAutoAdvance && currentStep < QUESTIONS.length - 1) {
+        autoAdvanceTimer = setTimeout(() => {
+          currentStep++;
+          renderCurrentQuestion('next');
+        }, 300);
+      }
+    }
+
+    function getIntensityLabel(avg) {
+      if (avg < 2.5) return '低度';
+      if (avg < 4.0) return '中低';
+      if (avg < 5.5) return '中高';
+      return '高度';
+    }
+
+    // 計算並渲染最終繪本圖鑑報告
+    function showResultReport() {
+      const anxietySum = answers.slice(0, 6).reduce((acc, v) => acc + (v || 4), 0);
+      const avoidanceSum = answers.slice(6, 12).reduce((acc, v) => acc + (v || 4), 0);
+
+      const anxietyAvg = anxietySum / 6;
+      const avoidanceAvg = avoidanceSum / 6;
+
+      const anxStr = anxietyAvg.toFixed(2);
+      const avdStr = avoidanceAvg.toFixed(2);
+
+      document.getElementById('score-anxiety').textContent = anxStr;
+      document.getElementById('score-avoidance').textContent = avdStr;
+      document.getElementById('tag-anxiety').textContent = getIntensityLabel(anxietyAvg);
+      document.getElementById('tag-avoidance').textContent = getIntensityLabel(avoidanceAvg);
+
+      // 判定四象限類型 (分界線 4.0)
+      let profileKey = 'secure';
+      if (anxietyAvg < 4 && avoidanceAvg < 4) {
+        profileKey = 'secure';
+      } else if (anxietyAvg >= 4 && avoidanceAvg < 4) {
+        profileKey = 'anxious';
+      } else if (anxietyAvg < 4 && avoidanceAvg >= 4) {
+        profileKey = 'avoidant';
+      } else {
+        profileKey = 'fearful';
+      }
+
+      const profile = ATTACHMENT_PROFILES[profileKey];
+
+      // 計算 SVG 星象座標點位置
+      const svgX = 52 + ((anxietyAvg - 1) / 6) * 316;
+      const svgY = 348 - ((avoidanceAvg - 1) / 6) * 316;
+
+      const pointGroup = document.getElementById('user-point-group');
+      pointGroup.setAttribute('transform', `translate(${svgX.toFixed(1)}, ${svgY.toFixed(1)})`);
+      document.getElementById('point-coord-text').textContent = `${anxStr}, ${avdStr}`;
+
+      // 動態調整浮動座標標籤避免裁切
+      const tooltip = document.getElementById('point-tooltip');
+      let tipOffsetX = 0;
+      let tipOffsetY = -21;
+      if (svgY < 62) tipOffsetY = 27;
+      if (svgX < 98) tipOffsetX = 26;
+      if (svgX > 322) tipOffsetX = -26;
+      tooltip.setAttribute('transform', `translate(${tipOffsetX}, ${tipOffsetY})`);
+
+      // 更新投影虛線
+      const projX = document.getElementById('proj-line-x');
+      projX.setAttribute('x1', svgX.toFixed(1));
+      projX.setAttribute('y1', svgY.toFixed(1));
+      projX.setAttribute('x2', svgX.toFixed(1));
+      projX.setAttribute('y2', '348');
+
+      const projY = document.getElementById('proj-line-y');
+      projY.setAttribute('x1', svgX.toFixed(1));
+      projY.setAttribute('y1', svgY.toFixed(1));
+      projY.setAttribute('x2', '52');
+      projY.setAttribute('y2', svgY.toFixed(1));
+
+      // 高亮所屬象限水彩區塊
+      ['quad-secure', 'quad-anxious', 'quad-avoidant', 'quad-fearful'].forEach(id => {
+        const el = document.getElementById(id);
+        el.style.opacity = (id === profile.quadrantId) ? '0.48' : '0.16';
+      });
+
+      // 渲染角色插畫與深度文案
+      document.getElementById('result-badge').textContent = profile.badge;
+      document.getElementById('result-character-art').innerHTML = profile.characterSvg;
+      document.getElementById('result-title').textContent = profile.title;
+      document.getElementById('result-subtitle').textContent = profile.subtitle;
+
+      document.getElementById('result-trait').textContent = profile.trait;
+      document.getElementById('result-behavior').textContent = profile.behavior;
+      document.getElementById('result-growth').textContent = profile.growth;
+      document.getElementById('result-tip').textContent = profile.tip;
+
+      showScreen(screenResult);
+    }
+
+    // 事件監聽綁定
+    document.getElementById('btn-start').addEventListener('click', () => {
+      currentStep = 0;
+      answers = new Array(12).fill(null);
+      showScreen(screenQuiz);
+      renderCurrentQuestion('next');
+    });
+
+    document.getElementById('btn-prev').addEventListener('click', () => {
+      if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+      if (currentStep > 0) {
+        currentStep--;
+        renderCurrentQuestion('prev');
+      }
+    });
+
+    document.getElementById('btn-next').addEventListener('click', () => {
+      if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+      if (answers[currentStep] === null) return;
+
+      if (currentStep < QUESTIONS.length - 1) {
+        currentStep++;
+        renderCurrentQuestion('next');
+      } else {
+        showResultReport();
+      }
+    });
+
+    document.getElementById('btn-restart').addEventListener('click', () => {
+      currentStep = 0;
+      answers = new Array(12).fill(null);
+      showScreen(screenWelcome);
+    });
+
+    // 一鍵複製繪本結果摘要
+    document.getElementById('btn-copy').addEventListener('click', () => {
+      const anxStr = document.getElementById('score-anxiety').textContent;
+      const avdStr = document.getElementById('score-avoidance').textContent;
+      const title = document.getElementById('result-title').textContent;
+      const subtitle = document.getElementById('result-subtitle').textContent;
+      const trait = document.getElementById('result-trait').textContent;
+
+      const summaryText = `📖【ECR-S 雙維度心理繪本測驗結果】\n` +
+        `✨ 我的依附角色：${title}（${subtitle}）\n` +
+        `🧭 星象座標分數：依附焦慮 ${anxStr} 分 / 依附逃避 ${avdStr} 分\n` +
+        `🌿 座標特徵：${trait}`;
+
+      const helper = document.getElementById('copy-helper');
+      helper.value = summaryText;
+      helper.select();
+      helper.setSelectionRange(0, 99999);
+
+      try {
+        document.execCommand('copy');
+        const btnText = document.getElementById('copy-btn-text');
+        const originalText = btnText.textContent;
+        btnText.textContent = '已複製繪本摘要！可貼到 LINE / IG 分享';
+        setTimeout(() => {
+          btnText.textContent = originalText;
+        }, 2400);
+      } catch (err) {
+        console.error('複製失敗:', err);
+      }
+    });
+  </script>
+</body>
+</html>
